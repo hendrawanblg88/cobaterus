@@ -2,11 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Game Kotak Misteri</title>
+  <title>🎁 Kotak Misteri 🎁</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      background: linear-gradient(135deg, #ffe0c3 0%, #ffb6b9 100%);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -15,12 +15,12 @@
     }
 
     .container {
-      background: white;
+      background: #fff;
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       text-align: center;
-      width: 320px;
+      width: 350px;
     }
 
     h2 {
@@ -31,7 +31,7 @@
     input {
       width: 90%;
       padding: 10px;
-      margin: 8px 0;
+      margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
     }
@@ -54,7 +54,7 @@
     #result {
       margin-top: 20px;
       font-weight: bold;
-      color: #333;
+      color: #222;
     }
   </style>
 </head>
@@ -81,24 +81,36 @@
         return;
       }
 
-      fetch(`${API_URL}?id=${id}&kupon=${kupon}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "success") {
-            const hadiah = bukaHadiah();
-            simpanHadiah(data.row, hadiah);
-            resultDiv.innerText = `🎉 Selamat! Kamu mendapatkan: ${hadiah}`;
-          } else {
-            resultDiv.innerText = `❌ ${data.message}`;
-          }
+      resultDiv.innerText = "🔍 Memeriksa kupon...";
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "cek",
+          id: id,
+          kupon: kupon
         })
-        .catch(() => {
-          resultDiv.innerText = "❌ Terjadi kesalahan saat menghubungi server.";
-        });
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "valid") {
+          const hadiah = bukaHadiah();
+          simpanHadiah(data.row, hadiah);
+          resultDiv.innerText = `🎉 Selamat! Kamu mendapatkan: ${hadiah}`;
+        } else if (data.status === "used") {
+          resultDiv.innerText = "❌ Kupon sudah digunakan.";
+        } else {
+          resultDiv.innerText = "❌ ID atau kupon tidak valid.";
+        }
+      })
+      .catch(() => {
+        resultDiv.innerText = "❌ Terjadi kesalahan saat menghubungi server.";
+      });
     }
 
     function bukaHadiah() {
-      const hadiahList = ["Voucher 50K", "Pulsa 25K", "Merchandise", "Hadiah Misteri", "Gagal 😢"];
+      const hadiahList = ["Voucher 50K", "Pulsa 25K", "Merchandise", "Hadiah Misteri", "Hadiah Hiburan"];
       return hadiahList[Math.floor(Math.random() * hadiahList.length)];
     }
 
@@ -106,7 +118,11 @@
       fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ row, hadiah })
+        body: JSON.stringify({
+          action: "simpan",
+          row: row,
+          hadiah: hadiah
+        })
       });
     }
   </script>
