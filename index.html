@@ -96,8 +96,10 @@
       .then(data => {
         if (data.status === "valid") {
           const hadiah = bukaHadiah();
-          simpanHadiah(data.row, hadiah);
-          resultDiv.innerText = `🎉 Selamat! Kamu mendapatkan: ${hadiah}`;
+          resultDiv.innerText = "🎁 Membuka kotak...";
+          simpanHadiah(data.row, hadiah, () => {
+            resultDiv.innerText = `🎉 Selamat! Kamu mendapatkan: ${hadiah}`;
+          });
         } else if (data.status === "used") {
           resultDiv.innerText = "❌ Kupon sudah digunakan.";
         } else {
@@ -114,7 +116,7 @@
       return hadiahList[Math.floor(Math.random() * hadiahList.length)];
     }
 
-    function simpanHadiah(row, hadiah) {
+    function simpanHadiah(row, hadiah, callback) {
       fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,6 +125,8 @@
           row: row,
           hadiah: hadiah
         })
+      }).then(() => {
+        if (callback) callback();
       });
     }
   </script>
